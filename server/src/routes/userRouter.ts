@@ -4,8 +4,11 @@ import { getUsers, signup, signin } from '../controllers';
 
 const router = Router();
 
-router.get('/', getUsers);
-router.post('/signup', signup);
+// Auth routes
 router.post('/signin', signin);
+router.post('/signup', signup);
+
+// User routes
+router.get('/:id', getUsers);
 
 export default router;

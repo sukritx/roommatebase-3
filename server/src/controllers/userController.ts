@@ -28,15 +28,23 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create new user
-    const newUser: IUser = new User({ email, password: hashedPassword });
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      isRoomOwner: false,
+      listedRooms: []
+    });
     await newUser.save();
 
     // Generate JWT token
     const token = jwt.sign({ userId: newUser._id }, jwtSecret, { expiresIn: '1h' });
 
-    const response: ApiResponse<{ token: string }> = {
+    const response: ApiResponse<{ token: string; user: IUser }> = {
       success: true,
-      data: { token },
+      data: { 
+        token,
+        user: newUser
+      },
     };
     res.status(201).json(response);
   } catch (error) {
@@ -78,9 +86,12 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
     // Generate JWT token
     const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '1h' });
 
-    const response: ApiResponse<{ token: string }> = {
+    const response: ApiResponse<{ token: string; user: IUser }> = {
       success: true,
-      data: { token },
+      data: { 
+        token,
+        user
+      },
     };
     res.status(200).json(response);
   } catch (error) {

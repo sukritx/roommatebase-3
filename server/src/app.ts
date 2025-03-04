@@ -14,7 +14,7 @@ app.use(cors({
 
 app.use(express.json()); // Parse JSON bodies
 
-app.use('/users/v1', userRouter); // Mount API routes
+app.use('/api/users/v1', userRouter); // Mount API routes
 
 // Error handling middleware
 app.use(errorHandler);

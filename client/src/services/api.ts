@@ -38,18 +38,18 @@ class ApiService {
 
   // Auth endpoints
   async signin(credentials: AuthCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/signin', credentials);
+    const response = await this.api.post<AuthResponse>('/users/v1/signin', credentials);
     return response.data;
   }
 
   async signup(credentials: SignupCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/signup', credentials);
+    const response = await this.api.post<AuthResponse>('/users/v1/signup', credentials);
     return response.data;
   }
 
   // User endpoints
   async getUser(id: string): Promise<IUser> {
-    const response = await this.api.get(`/users/${id}`);
+    const response = await this.api.get(`/users/v1/${id}`);
     return response.data.data;
   }
 }

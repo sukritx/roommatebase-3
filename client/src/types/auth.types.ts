@@ -15,14 +15,9 @@ export interface AuthCredentials {
 }
 
 /**
- * Interface for signup credentials, extending AuthCredentials.
+ * Interface for signup credentials, same as AuthCredentials for now.
  */
-export interface SignupCredentials extends AuthCredentials {
-  /**
-   * Name of the user.
-   */
-  name: string;
-}
+export type SignupCredentials = AuthCredentials;
 
 /**
  * Interface for authentication response.

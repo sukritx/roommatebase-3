@@ -9,7 +9,7 @@ export const config: Config = {
   env: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 3000,
   mongodb: {
-    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/boilerplate',
+    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/roommatebase-3',
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,
