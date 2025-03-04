@@ -25,7 +25,7 @@ const Header: React.FC = () => {
               About
             </Link>
             <Link
-              to="/login"
+              to="/signin"
               className="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-100"
             >
               Log in
