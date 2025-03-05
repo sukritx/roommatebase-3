@@ -17,8 +17,13 @@ const useAuthProvider = () => {
       if (token) {
         try {
           apiService.setAuthToken(token);
-          // TODO: Implement token validation endpoint
-          setIsLoading(false);
+          const response = await apiService.me();
+          if (response.success && response.data) {
+            setUser(response.data);
+          } else {
+            localStorage.removeItem('token');
+            apiService.setAuthToken(null);
+          }
         } catch (error) {
           console.error('Auth initialization failed:', error);
           localStorage.removeItem('token');
@@ -80,6 +85,10 @@ const useAuthProvider = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuthProvider();
+  
+  if (auth.isLoading) {
+    return <div>Loading...</div>; // Or your loading component
+  }
   
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };

@@ -1,4 +1,5 @@
 import { IUser } from "./user.types";
+import { ApiResponse } from "./api.types";
 
 /**
  * Interface for authentication credentials.
@@ -20,31 +21,12 @@ export interface AuthCredentials {
 export type SignupCredentials = AuthCredentials;
 
 /**
- * Interface for authentication response.
+ * Type for authentication response.
  */
-export interface AuthResponse {
-  /**
-   * Whether the authentication was successful.
-   */
-  success: boolean;
-  /**
-   * Data returned upon successful authentication.
-   */
-  data?: {
-    /**
-     * Authentication token.
-     */
-    token: string;
-    /**
-     * User data.
-     */
-    user: IUser;
-  };
-  /**
-   * Error message returned upon failed authentication.
-   */
-  error?: string;
-}
+export type AuthResponse = ApiResponse<{
+  token: string;
+  user: IUser;
+}>;
 
 /**
  * Interface for authentication context type.

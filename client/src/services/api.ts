@@ -2,6 +2,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { AuthCredentials, SignupCredentials, AuthResponse } from '../types/auth.types';
 import { IUser } from '../types/user.types';
+import { ApiResponse } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -44,6 +45,11 @@ class ApiService {
 
   async signup(credentials: SignupCredentials): Promise<AuthResponse> {
     const response = await this.api.post<AuthResponse>('/auth/v1/signup', credentials);
+    return response.data;
+  }
+
+  async me(): Promise<ApiResponse<IUser>> {
+    const response = await this.api.get<ApiResponse<IUser>>('/auth/v1/me');
     return response.data;
   }
 
