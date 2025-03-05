@@ -7,6 +7,7 @@ import {
   updateRoom,
   deleteRoom,
   searchRooms,
+  applyForRoom,
 } from '../controllers';
 import { auth } from '../middleware';
 
@@ -21,5 +22,6 @@ router.get('/:id', getRoomById);
 router.post('/', auth, createRoom);
 router.put('/:id', auth, updateRoom);
 router.delete('/:id', auth, deleteRoom);
+router.post('/:id/apply', auth, applyForRoom);
 
 export default router;

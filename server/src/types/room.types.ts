@@ -26,8 +26,10 @@ export interface IRoom extends Document {
     publicTransport?: string; // E.g., "10 min walk to metro"
     isAvailable: boolean;
     roomType: "Single-Tenant" | "Multi-Tenant";
-    parties: mongoose.ObjectId[]; // Parties applying for the room
-    selectedParty?: mongoose.ObjectId; // The accepted party
+    // Applications based on room type
+    singleTenantApplications: mongoose.ObjectId[]; // Individual user applications for single-tenant rooms
+    partyApplications: mongoose.ObjectId[]; // Party applications for multi-tenant rooms
+    selectedApplicant?: mongoose.ObjectId; // Selected user (for single-tenant) or party (for multi-tenant)
     status: "Available" | "Pending" | "Taken"; // Room availability status
     createdAt: Date;
-  }
+}

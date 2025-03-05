@@ -9,6 +9,8 @@ export const getRooms = async (req: Request, res: Response): Promise<void> => {
   try {
     const rooms = await Room.find({ isAvailable: true })
       .populate('owner', '-password')
+      .populate('singleTenantApplications', '-password')
+      .populate('partyApplications')
       .sort({ createdAt: -1 });
 
     const response: ApiResponse<IRoom[]> = {
@@ -30,8 +32,12 @@ export const getRoomById = async (req: Request, res: Response): Promise<void> =>
   try {
     const room = await Room.findById(req.params.id)
       .populate('owner', '-password')
-      .populate('parties')
-      .populate('selectedParty');
+      .populate('singleTenantApplications', '-password')
+      .populate('partyApplications')
+      .populate({
+        path: 'selectedApplicant',
+        select: '-password'
+      });
 
     if (!room) {
       res.status(404).json({
@@ -78,6 +84,8 @@ export const createRoom = async (req: AuthRequest, res: Response): Promise<void>
       ...req.body,
       owner: req.user._id,
       status: 'Available',
+      singleTenantApplications: [],
+      partyApplications: [],
     };
 
     const room = await Room.create(roomData);
@@ -128,6 +136,8 @@ export const searchRooms = async (req: Request, res: Response): Promise<void> =>
 
     const rooms = await Room.find(query)
       .populate('owner', '-password')
+      .populate('singleTenantApplications', '-password')
+      .populate('partyApplications')
       .sort({ createdAt: -1 });
 
     const response: ApiResponse<IRoom[]> = {
@@ -177,7 +187,88 @@ export const updateRoom = async (req: AuthRequest, res: Response): Promise<void>
       req.params.id,
       { $set: req.body },
       { new: true, runValidators: true }
-    ).populate('owner', '-password');
+    ).populate('owner', '-password')
+    .populate('singleTenantApplications', '-password')
+    .populate('partyApplications');
+
+    const response: ApiResponse<IRoom> = {
+      success: true,
+      data: updatedRoom!,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<never> = {
+      success: false,
+      error: (error as Error).message,
+    };
+    res.status(500).json(response);
+  }
+};
+
+// Apply for a room
+export const applyForRoom = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+      return;
+    }
+
+    const room = await Room.findById(req.params.id);
+
+    if (!room) {
+      res.status(404).json({
+        success: false,
+        error: 'Room not found',
+      });
+      return;
+    }
+
+    // Check if room is available
+    if (!room.isAvailable || room.status !== 'Available') {
+      res.status(400).json({
+        success: false,
+        error: 'Room is not available for applications',
+      });
+      return;
+    }
+
+    // Check if room is single-tenant type
+    if (room.roomType !== 'Single-Tenant') {
+      res.status(400).json({
+        success: false,
+        error: 'Can only apply directly to single-tenant rooms. For multi-tenant rooms, please join or create a party.',
+      });
+      return;
+    }
+
+    // Check if user has already applied
+    const hasApplied = room.singleTenantApplications.some(
+      applicantId => applicantId.toString() === userId.toString()
+    );
+
+    if (hasApplied) {
+      res.status(400).json({
+        success: false,
+        error: 'You have already applied for this room',
+      });
+      return;
+    }
+
+    // For single-tenant rooms, add the user to singleTenantApplications
+    const updatedRoom = await Room.findByIdAndUpdate(
+      req.params.id,
+      { 
+        $addToSet: { singleTenantApplications: userId },
+        status: 'Pending'
+      },
+      { new: true }
+    )
+    .populate('owner', '-password')
+    .populate('singleTenantApplications', '-password'); // Populate applicants without passwords
 
     const response: ApiResponse<IRoom> = {
       success: true,
@@ -222,8 +313,17 @@ export const deleteRoom = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    await Room.findByIdAndDelete(req.params.id);
+    // Check if there are any pending applications
+    if (room.status === 'Pending' && 
+        (room.singleTenantApplications.length > 0 || room.partyApplications.length > 0)) {
+      res.status(400).json({
+        success: false,
+        error: 'Cannot delete room with pending applications',
+      });
+      return;
+    }
 
+    await Room.findByIdAndDelete(req.params.id);
     res.json({
       success: true,
       data: null,

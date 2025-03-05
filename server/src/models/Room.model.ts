@@ -27,10 +27,12 @@ const RoomSchema = new Schema<IRoom>({
     publicTransport: { type: String }, // Transport details (e.g., "10 min walk to metro")
     isAvailable: { type: Boolean, default: true },
     roomType: { type: String, enum: ["Single-Tenant", "Multi-Tenant"], required: true },
-    parties: [{ type: Schema.Types.ObjectId, ref: "Party" }], // All parties competing for the room
-    selectedParty: { type: Schema.Types.ObjectId, ref: "Party" }, // The accepted party
-    status: { type: String, enum: ["Available", "Pending", "Taken"], default: "Available" }, // NEW: Prevents auto-assignment
+    // Applications based on room type
+    singleTenantApplications: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }], // For single-tenant rooms
+    partyApplications: [{ type: Schema.Types.ObjectId, ref: "Party", default: [] }], // For multi-tenant rooms
+    selectedApplicant: { type: Schema.Types.ObjectId, refPath: 'roomType' }, // References User or Party based on roomType
+    status: { type: String, enum: ["Available", "Pending", "Taken"], default: "Available" },
     createdAt: { type: Date, default: Date.now },
-  });
+});
 
-  export default mongoose.model<IRoom>("Room", RoomSchema);
+export default mongoose.model<IRoom>('Room', RoomSchema);
