@@ -18,6 +18,7 @@ export interface IUser extends Document {
   occupation?: string;
   isRoomOwner: boolean;
   listedRooms: mongoose.ObjectId[];
+  favoriteRooms: mongoose.ObjectId[];
   joinedParty?: mongoose.ObjectId;
   instagram?: string;
   createdAt: Date;

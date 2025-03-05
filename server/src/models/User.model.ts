@@ -20,6 +20,7 @@ const UserSchema = new Schema<IUser>({
   occupation: { type: String },
   isRoomOwner: { type: Boolean, default: false },
   listedRooms: [{ type: Schema.Types.ObjectId, ref: "Room" }],
+  favoriteRooms: [{ type: Schema.Types.ObjectId, ref: "Room" }],
   joinedParty: { type: Schema.Types.ObjectId, ref: "Party" },
   instagram: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
