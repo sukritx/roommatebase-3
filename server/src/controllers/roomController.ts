@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import Room from '../models/Room.model';
 import { IRoom, ApiResponse, AuthRequest } from '../types';
+import { FilterQuery } from 'mongoose';
 
 // Get all rooms
 export const getRooms = async (req: Request, res: Response): Promise<void> => {
@@ -87,6 +88,53 @@ export const createRoom = async (req: AuthRequest, res: Response): Promise<void>
       data: room,
     };
     res.status(201).json(response);
+  } catch (error) {
+    const response: ApiResponse<never> = {
+      success: false,
+      error: (error as Error).message,
+    };
+    res.status(500).json(response);
+  }
+};
+
+// Search rooms by location or coordinates
+export const searchRooms = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { location, lat, lng, radius = 5000 } = req.query;
+    let query: FilterQuery<IRoom> = { isAvailable: true };
+
+    // Search by city name
+    if (location) {
+      query = {
+        ...query,
+        location: { $regex: new RegExp(location as string, 'i') }
+      };
+    }
+    // Search by coordinates and radius
+    else if (lat && lng) {
+      query = {
+        ...query,
+        coordinates: {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [parseFloat(lng as string), parseFloat(lat as string)]
+            },
+            $maxDistance: parseInt(radius as string) // radius in meters
+          }
+        }
+      };
+    }
+
+    const rooms = await Room.find(query)
+      .populate('owner', '-password')
+      .sort({ createdAt: -1 });
+
+    const response: ApiResponse<IRoom[]> = {
+      success: true,
+      data: rooms,
+    };
+    res.json(response);
   } catch (error) {
     const response: ApiResponse<never> = {
       success: false,

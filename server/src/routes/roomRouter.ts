@@ -6,6 +6,7 @@ import {
   createRoom,
   updateRoom,
   deleteRoom,
+  searchRooms,
 } from '../controllers';
 import { auth } from '../middleware';
 
@@ -13,6 +14,7 @@ const router = Router();
 
 // Public routes
 router.get('/', getRooms);
+router.get('/search', searchRooms); // Add before /:id to prevent conflict
 router.get('/:id', getRoomById);
 
 // Protected routes
