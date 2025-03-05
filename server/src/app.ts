@@ -3,6 +3,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import userRouter from './routes/userRouter';
 import authRouter from './routes/authRouter';
+import partyRouter from './routes/partyRouter';
 import { errorHandler } from './middleware/errorHandler';
 import { config } from './config/config';
 
@@ -18,6 +19,7 @@ app.use(express.json()); // Parse JSON bodies
 // API Routes
 app.use('/api/auth/v1', authRouter);
 app.use('/api/users/v1', userRouter);
+app.use('/api/parties/v1', partyRouter);
 
 // Error handling middleware
 app.use(errorHandler);
