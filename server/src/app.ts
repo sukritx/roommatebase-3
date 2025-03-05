@@ -2,6 +2,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import userRouter from './routes/userRouter';
+import authRouter from './routes/authRouter';
 import { errorHandler } from './middleware/errorHandler';
 import { config } from './config/config';
 
@@ -14,7 +15,9 @@ app.use(cors({
 
 app.use(express.json()); // Parse JSON bodies
 
-app.use('/api/users/v1', userRouter); // Mount API routes
+// API Routes
+app.use('/api/auth/v1', authRouter);
+app.use('/api/users/v1', userRouter);
 
 // Error handling middleware
 app.use(errorHandler);

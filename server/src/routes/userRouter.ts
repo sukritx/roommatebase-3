@@ -1,14 +1,11 @@
 // server/routes/userRouter.ts
 import { Router } from 'express';
-import { getUsers, signup, signin } from '../controllers';
+import { getUsers } from '../controllers/userController';
+import { auth } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Auth routes
-router.post('/signin', signin);
-router.post('/signup', signup);
-
-// User routes
-router.get('/:id', getUsers);
+// Protected routes
+router.get('/', auth, getUsers);
 
 export default router;

@@ -38,12 +38,12 @@ class ApiService {
 
   // Auth endpoints
   async signin(credentials: AuthCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/users/v1/signin', credentials);
+    const response = await this.api.post<AuthResponse>('/auth/v1/signin', credentials);
     return response.data;
   }
 
   async signup(credentials: SignupCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/users/v1/signup', credentials);
+    const response = await this.api.post<AuthResponse>('/auth/v1/signup', credentials);
     return response.data;
   }
 
