@@ -1,6 +1,7 @@
 // server/controllers/roomController.ts
 import { Request, Response } from 'express';
 import Room from '../models/Room.model';
+import Party from '../models/Party.model';
 import { IRoom, ApiResponse, AuthRequest } from '../types';
 import { FilterQuery } from 'mongoose';
 
@@ -269,6 +270,203 @@ export const applyForRoom = async (req: AuthRequest, res: Response): Promise<voi
     )
     .populate('owner', '-password')
     .populate('singleTenantApplications', '-password'); // Populate applicants without passwords
+
+    const response: ApiResponse<IRoom> = {
+      success: true,
+      data: updatedRoom!,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<never> = {
+      success: false,
+      error: (error as Error).message,
+    };
+    res.status(500).json(response);
+  }
+};
+
+// Select tenant for single-tenant room
+export const selectTenant = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+      return;
+    }
+
+    const { tenantId } = req.body;
+    if (!tenantId) {
+      res.status(400).json({
+        success: false,
+        error: 'Tenant ID is required',
+      });
+      return;
+    }
+
+    const room = await Room.findById(req.params.id);
+    if (!room) {
+      res.status(404).json({
+        success: false,
+        error: 'Room not found',
+      });
+      return;
+    }
+
+    // Verify owner
+    if (room.owner.toString() !== userId.toString()) {
+      res.status(403).json({
+        success: false,
+        error: 'Only room owner can select tenants',
+      });
+      return;
+    }
+
+    // Verify room type
+    if (room.roomType !== 'Single-Tenant') {
+      res.status(400).json({
+        success: false,
+        error: 'Can only select tenants for single-tenant rooms',
+      });
+      return;
+    }
+
+    // Verify tenant has applied
+    if (!room.singleTenantApplications.some(id => id.toString() === tenantId)) {
+      res.status(400).json({
+        success: false,
+        error: 'Selected user has not applied for this room',
+      });
+      return;
+    }
+
+    // Update room with selected tenant
+    const updatedRoom = await Room.findByIdAndUpdate(
+      req.params.id,
+      {
+        selectedApplicant: tenantId,
+        status: 'Taken',
+        isAvailable: false
+      },
+      { new: true }
+    )
+    .populate('owner', '-password')
+    .populate('singleTenantApplications', '-password')
+    .populate('selectedApplicant', '-password');
+
+    const response: ApiResponse<IRoom> = {
+      success: true,
+      data: updatedRoom!,
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<never> = {
+      success: false,
+      error: (error as Error).message,
+    };
+    res.status(500).json(response);
+  }
+};
+
+// Select party for multi-tenant room
+export const selectParty = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+      return;
+    }
+
+    const { partyId } = req.body;
+    if (!partyId) {
+      res.status(400).json({
+        success: false,
+        error: 'Party ID is required',
+      });
+      return;
+    }
+
+    const room = await Room.findById(req.params.id);
+    if (!room) {
+      res.status(404).json({
+        success: false,
+        error: 'Room not found',
+      });
+      return;
+    }
+
+    // Verify owner
+    if (room.owner.toString() !== userId.toString()) {
+      res.status(403).json({
+        success: false,
+        error: 'Only room owner can select parties',
+      });
+      return;
+    }
+
+    // Verify room type
+    if (room.roomType !== 'Multi-Tenant') {
+      res.status(400).json({
+        success: false,
+        error: 'Can only select parties for multi-tenant rooms',
+      });
+      return;
+    }
+
+    // Verify party has applied
+    if (!room.partyApplications.some(id => id.toString() === partyId)) {
+      res.status(400).json({
+        success: false,
+        error: 'Selected party has not applied for this room',
+      });
+      return;
+    }
+
+    // Get party to verify member count
+    const party = await Party.findById(partyId);
+    if (!party) {
+      res.status(404).json({
+        success: false,
+        error: 'Selected party not found',
+      });
+      return;
+    }
+
+    if (party.members.length !== room.maxRoommates) {
+      res.status(400).json({
+        success: false,
+        error: `Party must have exactly ${room.maxRoommates} members`,
+      });
+      return;
+    }
+
+    // Close the selected party
+    await Party.findByIdAndUpdate(partyId, { status: 'Closed' });
+
+    // Update room with selected party
+    const updatedRoom = await Room.findByIdAndUpdate(
+      req.params.id,
+      {
+        selectedApplicant: partyId,
+        status: 'Taken',
+        isAvailable: false
+      },
+      { new: true }
+    )
+    .populate('owner', '-password')
+    .populate('partyApplications')
+    .populate({
+      path: 'selectedApplicant',
+      populate: {
+        path: 'members',
+        select: '-password'
+      }
+    });
 
     const response: ApiResponse<IRoom> = {
       success: true,
