@@ -1,4 +1,3 @@
-// server/models/User.ts
 import mongoose, { Schema } from 'mongoose';
 import { IUser } from '../types';
 
@@ -23,7 +22,7 @@ const UserSchema = new Schema<IUser>({
   favoriteRooms: [{ type: Schema.Types.ObjectId, ref: "Room" }],
   joinedParty: { type: Schema.Types.ObjectId, ref: "Party" },
   instagram: { type: String, default: "" },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 export default mongoose.model<IUser>('User', UserSchema);

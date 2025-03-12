@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IParty } from '../types/party.types';
+import { IParty } from '../types';
 
 const PartySchema = new Schema<IParty>({
   room: { type: Schema.Types.ObjectId, ref: 'Room', required: true },
