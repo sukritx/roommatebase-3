@@ -4,7 +4,8 @@ export interface IRoom extends Document {
     owner: mongoose.ObjectId;
     
     // Property Information
-    category: "Apartment" | "House" | "Room" | "Townhouse";
+    category: "Apartment" | "City house" | "Club room" | "Condominium" | "Detached Single Family House" | "Double house" | "Half double house" | "Housing Cooperative" | "Multi family house" | "Parcel house" | "Small house" | "Summer house" | "Townhouse" | "Villa" | "Youth Housing";
+    images: string[];
     title: string;
     description: string;
     location: string; // City name for search (e.g., "Oslo")
@@ -21,7 +22,8 @@ export interface IRoom extends Document {
     
     // Rental Information
     rentalPeriod: "1-11 months" | "12-23 months" | "24+ months" | "Unlimited";
-    availableFrom: Date;
+    availableFrom: "Specific Date" | "As soon as possible";
+    availableDate?: Date; // Used when "Specific Date" is selected
     price: number;
     utilities: number; // Additional utility costs
     deposit: number;
@@ -47,6 +49,7 @@ export interface IRoom extends Document {
     partyApplications: mongoose.ObjectId[]; // For multi-tenant rooms
     selectedApplicant?: mongoose.ObjectId; // References User or Party based on roomType
     status: "Available" | "Pending" | "Taken";
+    lastUpdated: Date;
 
     // Contact & Digital Showing
     contactOptions: {

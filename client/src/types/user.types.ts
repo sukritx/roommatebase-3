@@ -19,6 +19,7 @@ export interface IUser {
   occupation?: string;
   isRoomOwner: boolean;
   listedRooms: string[];
+  favoriteRooms: string[];
   joinedParty?: string;
   instagram?: string;
   createdAt: Date;
